@@ -12,6 +12,20 @@ def assert(expression, failmsg)
     die(failmsg) unless expression
 end
 
+def translate_ship_list(list)
+    list.select { |ship| ship }.map { |ship|
+        {
+            mst_id: ship['api_ship_id'],
+            level: ship['api_lv'],
+            kyouka: ship['api_kyouka'],
+            morale: ship['api_cond'],
+            equip: ship['poi_slot'].map { |slot|
+                slot ? slot['api_slotitem_id'] : 0
+            }
+        }
+    }
+end
+
 
 obj = JSON.load(`xclip -o`)
 
@@ -22,26 +36,16 @@ out['mapnum'] = obj['map'][1]
 
 # FIXME
 out['fleetnum'] = 1
-out['combined'] = 0
 
-assert(obj['fleet']['type'] == 0, 'Unknown fleet type')
+assert(obj['fleet']['type'] == 0 || obj['fleet']['type'] == 1, 'Unknown fleet type')
+out['combined'] = obj['fleet']['type']
 
-out['fleet1'] = obj['fleet']['main'].select { |ship|
-    ship
-}.map { |ship|
-    {
-        mst_id: ship['api_ship_id'],
-        level: ship['api_lv'],
-        kyouka: ship['api_kyouka'],
-        morale: ship['api_cond'],
-        equip: ship['poi_slot'].map { |slot|
-            slot ? slot['api_slotitem_id'] : 0
-        }
-    }
-}
-
-# FIXME
-out['fleet2'] = []
+out['fleet1'] = translate_ship_list(obj['fleet']['main'])
+if obj['fleet']['type'] == 1
+    out['fleet2'] = translate_ship_list(obj['fleet']['escort'])
+else
+    out['fleet2'] = []
+end
 out['fleet3'] = []
 out['fleet4'] = []
 
