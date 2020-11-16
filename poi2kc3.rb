@@ -69,7 +69,7 @@ elsif obj['packet'].length == 2
     end
 elsif obj['packet'].length == 3
     night_battle = obj['packet'][1]
-    result_packet = obj['poacket'][2]
+    result_packet = obj['packet'][2]
 else
     die('Unexpected packet count')
 end
